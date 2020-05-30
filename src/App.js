@@ -17,7 +17,8 @@ class App extends React.Component {
         user: {},
         users: [],
         loading: false,
-        alert: null
+        alert: null,
+        repos: []
     };
 
     // Search Github users
@@ -38,7 +39,17 @@ class App extends React.Component {
             client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&
             client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`);
             this.setState({user: res.data, loading: false});
-    }
+    };
+
+    // Get Users Repos
+    getUserRepos = async username => {
+        this.setState({loading: true});
+        const res = await axios
+            .get(`https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&
+            client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&
+            client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`);
+        this.setState({repos: res.data, loading: false});
+    };
 
     // Clear users from state
     clearUsers = () => this.setState({users: [], loading: false});
@@ -51,7 +62,7 @@ class App extends React.Component {
 
     render() {
 
-        const {user, users, loading} = this.state;  // Destructuring
+        const {user, users, loading, repos} = this.state;  // Destructuring
         return (
             <Router>
                 <div className="App">
@@ -71,7 +82,12 @@ class App extends React.Component {
                           <Route exact path='/' component={Home} />
                           <Route exact path='/about' component={About} />
                           <Route exact path='/user/:login' render={props =>(
-                              <User {...props} getUser={this.getUser} user={user} loading={loading} />
+                              <User {...props}
+                                    getUser={this.getUser}
+                                    getUserRepos={this.getUserRepos}
+                                    user={user}
+                                    repos={repos}
+                                    loading={loading} />
                           )}/>
                       </Switch>
                   </div>
